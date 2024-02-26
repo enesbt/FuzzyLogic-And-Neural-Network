@@ -1,0 +1,82 @@
+FUNCTION_BLOCK Pil
+
+
+VAR_INPUT
+	voltaj:REAL;
+	sicaklik:REAL;
+END_VAR
+
+VAR_OUTPUT
+	doluluk:REAL;
+END_VAR
+
+FUZZIFY voltaj
+	TERM cokDusuk := (2.5,1)(3.6,0);
+	TERM dusuk := Trian 3.5 3.6 3.7;
+	TERM normal := Trian 3.6 3.7 3.8;
+	TERM normalUstu := Trian 3.7 3.8 4;
+	TERM yuksek := Trian 3.8  4 4.1;
+	TERM cokYuksek := Trian 4 4.2 4.2;
+END_FUZZIFY
+
+FUZZIFY sicaklik
+	TERM dusuk := (0,1)(15,0);
+	TERM normal :=Trape 0 15 35 45;
+	TERM yuksek :=Trian 35 45 45;
+END_FUZZIFY
+
+
+DEFUZZIFY doluluk
+	
+	TERM cokAzDolu := (0,1)(20,0);
+	TERM azDolu :=  Trian 10 30 50;
+	TERM ortaDolu := Trian 30 50 70;
+	TERM ortaUstuDolu := Trian  50 70 90;
+	TERM dolu := Trian 70 90 100;
+	TERM cokDolu := Trian 90  100 100;
+	
+	
+	METHOD : COA; 
+	DEFAULT := 0;
+	
+END_DEFUZZIFY
+
+
+
+RULEBLOCK kuralBlok1
+	AND : MIN;  
+	ACT : MIN;
+	ACCU : MAX;
+	
+	RULE 1: IF voltaj IS cokDusuk THEN doluluk IS cokAzDolu;
+	
+	RULE 2: IF voltaj IS dusuk AND sicaklik IS dusuk THEN doluluk IS cokAzDolu WITH 0.8;
+	RULE 3: IF voltaj IS dusuk AND sicaklik IS normal THEN doluluk IS azDolu ;	
+	RULE 4: IF voltaj IS dusuk AND sicaklik IS yuksek THEN doluluk IS cokAzDolu WITH 0.8;
+	
+	RULE 5: IF voltaj IS normal AND sicaklik IS dusuk THEN doluluk IS azDolu ;
+	RULE 6: IF voltaj IS normal AND sicaklik IS normal THEN doluluk IS ortaDolu;
+	RULE 7: IF voltaj IS normal AND sicaklik IS yuksek THEN doluluk IS azDolu;
+	
+	
+	RULE 8: IF voltaj IS normalUstu AND sicaklik IS dusuk THEN doluluk IS ortaDolu ;
+	RULE 9: IF voltaj IS normalUstu AND sicaklik IS normal THEN doluluk IS ortaUstuDolu;	
+	RULE 10: IF voltaj IS normalUstu AND sicaklik IS yuksek THEN doluluk IS ortaDolu  ;
+	
+	
+	RULE 11: IF voltaj IS yuksek AND sicaklik IS dusuk THEN doluluk IS ortaUstuDolu ;
+	RULE 12: IF voltaj IS yuksek AND sicaklik IS normal THEN doluluk IS dolu;	
+	RULE 13: IF voltaj IS yuksek AND sicaklik IS yuksek THEN doluluk IS ortaUstuDolu ;
+	
+	
+	RULE 14: IF voltaj IS cokYuksek AND sicaklik IS dusuk THEN doluluk IS dolu;
+	RULE 15: IF voltaj IS cokYuksek AND sicaklik IS normal THEN doluluk IS cokDolu;	
+	RULE 16: IF voltaj IS cokYuksek AND sicaklik IS yuksek THEN doluluk IS dolu ;
+	
+	RULE 17: IF voltaj IS dusuk AND sicaklik IS dusuk THEN doluluk IS azDolu WITH 0.2;
+	RULE 18: IF voltaj IS dusuk AND sicaklik IS yuksek THEN doluluk IS azDolu WITH 0.2;
+	
+	
+END_RULEBLOCK
+
+END_FUNCTION_BLOCK
